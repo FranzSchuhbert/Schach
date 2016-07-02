@@ -31,5 +31,50 @@ int* Koenig::get_position(){
 	zurueck[1]=position[1];
 	return zurueck;
 }
-	
+void Koenig::zuege(){
+	int zuege[2];
+	std::string p;
+	std::cout << "Der König kann nach ";
+	zuege[0]	=	8-position[0];
+	zuege[1]	=	position[1]+1;
+	if ( (zuege[0]<9)&&(zuege[0]>=0) && (zuege[1]<8) && (zuege[1]>=0) ){
+	p		=	convertback(zuege[1]);
+	std::cout << p << zuege[0] << " ,";}
+	zuege[0]	=	9-position[0];
+	zuege[1]	=	position[1]+1;
+	if ( ( (zuege[0]<9)&&(zuege[0]>0) && (zuege[1]<8)&&(zuege[1]>=0) ) ){
+	p 		=	convertback(zuege[1]);
+	std::cout << p << zuege[0] << " ,";}
+	zuege[0]	=	9-position[0];
+	zuege[1]	=	position[1];
+	if ( ( (zuege[0]<9)&&(zuege[0]>0) && (zuege[1]<8)&&(zuege[1]>=0) ) ){
+	p 		=	convertback(zuege[1]);
+	std::cout << p << zuege[0] << " ,";}
+	zuege[0]	=	9-position[0];
+	zuege[1]	=	position[1]-1;
+	if ( ( (zuege[0]<9)&&(zuege[0]>0) && (zuege[1]<8)&&(zuege[1]>=0) ) ){
+	p 		=	convertback(zuege[1]);
+	std::cout << p << zuege[0] << " ,";}
+	zuege[0]	=	8-position[0];
+	zuege[1]	=	position[1]-1;
+	if ( ( (zuege[0]<9)&&(zuege[0]>0) && (zuege[1]<8)&&(zuege[1]>=0) ) ){
+	p 		=	convertback(zuege[1]);
+	std::cout << p << zuege[0] << " ,";}
+	zuege[0]	=	7-position[0];
+	zuege[1]	=	position[1]-1;
+	if ( ( (zuege[0]<9)&&(zuege[0]>0) && (zuege[1]<8)&&(zuege[1]>=0) ) ){
+	p 		=	convertback(zuege[1]);
+	std::cout << p << zuege[0] << " ,";}
+	zuege[0]	=	7-position[0];
+	zuege[1]	=	position[1];
+	if ( ( (zuege[0]<9)&&(zuege[0]>0) && (zuege[1]<8)&&(zuege[1]>=0) ) ){
+	p 		=	convertback(zuege[1]);
+	std::cout << p << zuege[0] << " ,";}
+	zuege[0]	=	7-position[0];
+	zuege[1]	=	position[1]+1;
+	if ( ( (zuege[0]<9)&&(zuege[0]>0) && (zuege[1]<8)&&(zuege[1]>=0) ) ){
+	p 		=	convertback(zuege[1]);
+	std::cout << p << zuege[0];}
+	std::cout << "ziehen\n";
+}
 #endif

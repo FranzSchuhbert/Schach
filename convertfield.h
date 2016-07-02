@@ -1,3 +1,6 @@
+#ifndef __converterfield_h
+#define __converterfield_h
+
 #include<string>
 
 
@@ -14,4 +17,21 @@ int convertfield(std::string test){
 	else{ rueck = 10;}
 	return rueck;
 }
+std::string convertback(int test){
+	std::string rueck;
+	if (test==0){rueck="a";}
+	else if (test==1){rueck="b";}
+	else if (test==2){rueck="c";}
+	else if (test==3){rueck="d";}
+	else if (test==4){rueck="e";}
+	else if (test==5){rueck="f";}
+	else if (test==6){rueck="g";}
+	else if (test==7){rueck="h";}
+	else{ rueck="X";}
+	return rueck;
+}
+
+
+
 	
+#endif
