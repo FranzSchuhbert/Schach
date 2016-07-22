@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 
 //========================================================================
@@ -17,7 +18,7 @@ const int anz = size * size;
 int zl (int i) { return size-i/size; }                  // Zeilennummer
 int sp (int i) { return i % size + 1; }                 // Spaltennummer
 char spch (int i) { return (char) (i % size + 'a'); }   // Spaltenname
-
+int test ( int a, int b ) { if(b!=1){ if (a==1){ return 1;} else {return 0; }  } else return 1;}
 
 //Selbstgeschriebene Indexklasse
 class Index
@@ -64,7 +65,7 @@ public:
     ~Feld() { delete &ind; }
     
     virtual char ch () { if (this->ind.FeldFarbe) return '_'; return ' '; }
-    virtual int pruefen( int start, int ende) { return 2; }
+    virtual int* pruefen( int start, int ende) {return nullptr;}
 };
 
 class Figur : public Feld
@@ -76,7 +77,7 @@ protected:
 public:
     Figur (int ix, Farbe ff) : Feld (ix) { this->f = ff; }
     virtual char ch () { return '?'; }
-    virtual int pruefen( int start, int ende ) { return 3; }
+    virtual int* pruefen( int start, int ende ) { return nullptr; }
 };
 
 class Bauer : public Figur
@@ -85,8 +86,8 @@ private:
 public:
     Bauer (int idx, Farbe ff) : Figur (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'B'; return 'b'; }
-    virtual int pruefen(int start, int ende){
-    	    if ( (start-ende)==8 || (start-ende)==16 ){ return 1; }
+    virtual int* pruefen(int start, int ende){
+    	    if ( (start-ende)==8 || (start-ende)==16 ){ return nullptr; }
     	    else return 0;
     }
 };
@@ -97,7 +98,7 @@ private:
 public:
     Offizier (int idx, Farbe ff) : Figur (idx, ff) { }
     virtual char ch () { return '#'; }
-    virtual int pruefen(int start, int ende){ return 4; }
+    virtual int* pruefen(int start, int ende){ return nullptr; }
 };
 
 class Turm : public Offizier
@@ -111,23 +112,30 @@ public:
 class Springer : Offizier
 {
 private:
+	void emergencyStop(int i) const;
 public:
     Springer (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'S'; return 's'; }
-    virtual int pruefen(int start, int ende){
+    virtual int* pruefen(int start, int ende){
+    	    
+    	    
+    	    //***********************************************************************************************************
     	    int test = start-ende;
+    	    static int zuege[1];
     	    switch ( test ){
-    	    case -17:
-    	    case -15:
-    	    case -10:
-    	    case -6:
-    	    case 6:
-    	    case 10:
-    	    case 15:
-    	    case 17:
-    	    	    return 1; break;
-    	    default: return 0; break;
+    	    case -17: 	if ( (int)start%8 == 0 ) {emergencyStop(1);} zuege[0]=ende;return zuege; break;
+    	    case -15: 	if ( (int)start%8 - 7 == 0) {emergencyStop(2);} zuege[0]=ende;return zuege; break;
+    	    case -10: 	if ( (int)start%8 - 1 == 0) {emergencyStop(3);} zuege[0]=ende;return zuege; break;
+    	    	    	if ( (int)start%8 == 0 ) {emergencyStop(4);} zuege[0]=ende;return zuege; break;
+    	    case -6:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(5);} zuege[0]=ende;return zuege; break;
+    	    case 6:	if ( (int)start%8 - 6 == 0 ) {emergencyStop(6);} zuege[0]=ende;return zuege; break;
+    	    case 10:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(7);} zuege[0]=ende;return zuege; break;
+    	    	    	if ( (int)start%8 - 6 == 0 ) {emergencyStop(8);} zuege[0]=ende;return zuege; break;
+    	    case 15:	if ( (int)start%8 - 1 == 0 ) {emergencyStop(9);} zuege[0]=ende;return zuege; break;
+    	    case 17:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(10);} zuege[0]=ende;return zuege; break;
+    	    default: return nullptr; break;
     	    }
+    	    //***********************************************************************************************************
     }
 };
 
@@ -137,6 +145,31 @@ private:
 public:
     Laeufer (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'L'; return 'l'; }
+    virtual int* pruefen(int start, int ende){
+    	    if (ende>=0 && ende<64){
+    	    	int test1 = (start-ende)%7;
+    	    	int test2 = (start-ende)%9;
+    	    	if ( test1==0 ){
+    	    		int zwischenzug = (start-ende)/7;
+    	    		int* zuege = new int[zwischenzug];
+    	    		while ( zwischenzug > 0){
+    	    			zuege[zwischenzug] = start - 7 * zwischenzug;
+    	    			zwischenzug = zwischenzug - 1 ;
+    	    		}
+    	    	return zuege; }
+    	    	else if (test2==0){
+    	    		int zwischenzug = (start-ende)/9;
+    	    		int* zuege = new int[zwischenzug];
+    	    		while ( zwischenzug > 0){
+    	    			zuege[zwischenzug-1] = start - 9 * zwischenzug;
+    	    			zwischenzug = zwischenzug -1;
+    	    		}
+    	    	return zuege; }
+    	    	else { return nullptr; }
+    	    }	
+    	    else { return nullptr; }
+    	    return nullptr;
+    }
 };
 
 class Dame : Offizier
@@ -178,15 +211,26 @@ public:
     void clearFigure ( int idx){
     	b[idx] = new Feld(idx);
     }
-    
-    //**************************************************************************************
+      
     void Zug( int start, int ende){
-    	if (b[start]->pruefen(start, ende) && (b[ende]->ch()=='_'||b[ende]->ch()==' ')  ){
+    		int * felder = b[start]->pruefen(start, ende);
+    		std::cout << "Grösse: " << sizeof(felder);
+    		if ( felder != nullptr){
+    		std::cout << std::endl << "Kein Nullptr" << std::endl;
+    		int tester = 0;
+    		int size = sizeof(felder);
+    		std::cout << std::endl << "Size: " << size << std::endl;
+    		for ( int m = size; m > 0; m--){
+    			if ( (b[felder[m]-1]->ch()!='_') && (b[felder[m]-1]->ch()!=' ') ){
+    				tester = 1;
+    			}
+    		}
+    		std::cout << std::endl << "Tester: " << tester << std::endl;
+    		if (tester==0){
     	b[ende] = b[start];
-    	clearFigure (start);}
-    	else { emergencyStop(2); }
+    	clearFigure (start);}}
+    	else { emergencyStop(3); }
     }
-    //**************************************************************************************
     
 };
 
@@ -272,5 +316,13 @@ void Figur::emergencyStop (int i) const{
 	std::cout << std::endl << "+++ Error in class Figur; Error number: " << i << std::endl;
 	throw new FigurException;
 };
+
+class SpringerException : std::exception{};
+void Springer::emergencyStop (int i) const{
+	std::cout << std::endl << "+++ Error in class Springer; Error number: " << i << std::endl;
+	throw new SpringerException;
+};
+
+
 
 #endif
