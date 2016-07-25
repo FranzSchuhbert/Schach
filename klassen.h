@@ -24,9 +24,10 @@ int test ( int a, int b ) { if(b!=1){ if (a==1){ return 1;} else {return 0; }  }
 class Index
 {
 private:
-  	int i;
+  	
   	void emergencyStop (int i) const;
 public:
+	int i;
 	int FeldFarbe;
 	Index( int idx ) { 	this->i = idx;	this->FeldFarbe = ((int)(idx/size)+(int)(idx%size)) % 2;	}
 };
@@ -64,8 +65,11 @@ public:
     Feld (int i) : ind(i){}
     ~Feld() { delete &ind; }
     
+    int getindex(){ return this->ind.i; }
+    
     virtual char ch () { if (this->ind.FeldFarbe) return '_'; return ' '; }
     virtual int* pruefen( int start, int ende) {return nullptr;}
+   
 };
 
 class Figur : public Feld
@@ -117,22 +121,25 @@ public:
     Springer (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'S'; return 's'; }
     virtual int* pruefen(int start, int ende){
-    	    
+    	    std::cout << "Ausgangsfigur ist Springer" << std::endl;
     	    
     	    //***********************************************************************************************************
     	    int test = start-ende;
-    	    static int zuege[1];
+    	    std::cout << std::endl << "start-ende: " << test << std::endl;
+    	    static int zuege[2];
+    	    zuege[0] = sizeof(zuege)/sizeof(*zuege)-1;
+    	    std::cout << "Array size: " << zuege[0] << std::endl;
     	    switch ( test ){
-    	    case -17: 	if ( (int)start%8 == 0 ) {emergencyStop(1);} zuege[0]=ende;return zuege; break;
-    	    case -15: 	if ( (int)start%8 - 7 == 0) {emergencyStop(2);} zuege[0]=ende;return zuege; break;
-    	    case -10: 	if ( (int)start%8 - 1 == 0) {emergencyStop(3);} zuege[0]=ende;return zuege; break;
-    	    	    	if ( (int)start%8 == 0 ) {emergencyStop(4);} zuege[0]=ende;return zuege; break;
-    	    case -6:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(5);} zuege[0]=ende;return zuege; break;
-    	    case 6:	if ( (int)start%8 - 6 == 0 ) {emergencyStop(6);} zuege[0]=ende;return zuege; break;
-    	    case 10:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(7);} zuege[0]=ende;return zuege; break;
-    	    	    	if ( (int)start%8 - 6 == 0 ) {emergencyStop(8);} zuege[0]=ende;return zuege; break;
-    	    case 15:	if ( (int)start%8 - 1 == 0 ) {emergencyStop(9);} zuege[0]=ende;return zuege; break;
-    	    case 17:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(10);} zuege[0]=ende;return zuege; break;
+    	    case -17: 	if ( (int)start%8 == 0 ) {emergencyStop(1);} zuege[1]=ende;return zuege; break;
+    	    case -15: 	if ( (int)start%8 - 7 == 0) {emergencyStop(2);} zuege[1]=ende;return zuege; break;
+    	    case -10: 	if ( (int)start%8 - 1 == 0) {emergencyStop(3);} zuege[1]=ende;return zuege; break;
+    	    	    	if ( (int)start%8 == 0 ) {emergencyStop(4);} zuege[1]=ende;return zuege; break;
+    	    case -6:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(5);} zuege[1]=ende;return zuege; break;
+    	    case 6:	if ( (int)start%8 - 6 == 0 ) {emergencyStop(6);} zuege[1]=ende;return zuege; break;
+    	    case 10:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(7);} zuege[1]=ende;return zuege; break;
+    	    	    	if ( (int)start%8 - 6 == 0 ) {emergencyStop(8);} zuege[1]=ende;return zuege; break;
+    	    case 15:	if ( (int)start%8 - 1 == 0 ) {emergencyStop(9);} zuege[1]=ende;return zuege; break;
+    	    case 17:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(10);} zuege[1]=ende; return zuege; break;
     	    default: return nullptr; break;
     	    }
     	    //***********************************************************************************************************
@@ -146,15 +153,18 @@ public:
     Laeufer (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'L'; return 'l'; }
     virtual int* pruefen(int start, int ende){
+    	    std::cout << "Ausgangsfigur ist Läufer" << std::endl;
     	    if (ende>=0 && ende<64){
     	    	int test1 = (start-ende)%7;
     	    	int test2 = (start-ende)%9;
     	    	if ( test1==0 ){
     	    		int zwischenzug = (start-ende)/7;
-    	    		int* zuege = new int[zwischenzug];
+    	    		int* zuege = new int[zwischenzug+1];
+    	    		zuege[0] = zwischenzug;
+    	    		std::cout << "Arraysize: " << zuege[0] << std::endl;
     	    		while ( zwischenzug > 0){
     	    			zuege[zwischenzug] = start - 7 * zwischenzug;
-    	    			zwischenzug = zwischenzug - 1 ;
+    	    			zwischenzug = zwischenzug - 1;
     	    		}
     	    	return zuege; }
     	    	else if (test2==0){
@@ -214,22 +224,29 @@ public:
       
     void Zug( int start, int ende){
     		int * felder = b[start]->pruefen(start, ende);
-    		std::cout << "Grösse: " << sizeof(felder);
+    		std::cout << "Grösse: " << felder[0];
     		if ( felder != nullptr){
     		std::cout << std::endl << "Kein Nullptr" << std::endl;
     		int tester = 0;
-    		int size = sizeof(felder);
+    		int size = felder[0];
+    		int x;
     		std::cout << std::endl << "Size: " << size << std::endl;
     		for ( int m = size; m > 0; m--){
-    			if ( (b[felder[m]-1]->ch()!='_') && (b[felder[m]-1]->ch()!=' ') ){
+    			x = felder[m];
+    			std::cout << std::endl << "Feld wird geprüft: " << felder[1] << std::endl;
+    			std::cout << m << std::endl;
+    			std::cout << " " << b[x]->getindex() << "  " << x <<  "  " << b[x]->ch() << std::endl;
+    			if ( (b[x]->ch()!='_') && (b[x]->ch()!=' ') ){
     				tester = 1;
     			}
     		}
     		std::cout << std::endl << "Tester: " << tester << std::endl;
     		if (tester==0){
     	b[ende] = b[start];
-    	clearFigure (start);}}
-    	else { emergencyStop(3); }
+    	clearFigure (start);}
+    		else{ std::cout << "Ungültiger zug" << std::endl;}}
+    	else if ( felder == nullptr ) { std::cout << std::endl << "Nullpointer!!" << std::endl; emergencyStop(3); }
+    	else { emergencyStop(4); }
     }
     
 };

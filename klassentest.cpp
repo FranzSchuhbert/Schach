@@ -16,7 +16,8 @@ int main ()
     b.print();
     //b.Zug(48, 32);
     //b.print();
-    b.Zug(57, 40);
+    b.clearFigure(51);
+    b.Zug(58, 30);
     b.print();
 }
 
