@@ -7,6 +7,27 @@
 #include <algorithm>
 
 
+/*
+
+TO DO:
+
+- alle Funktionen zl und sp entfernen
+- evtl spch für Spaltenname entfernen ( wird nur für Brettkonstruktor verwendet )
+- Zuege für Dame einfügen
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
 //========================================================================
 
 const int size = 8;
@@ -33,21 +54,6 @@ public:
 };
 
 
-/*
-class Zug
-{
-private:
-	Index a, e;
-public:
-	Zug(int, int);
-};
-
-Zug::Zug(int start, int end, Brett b){
-	b[end]		= b[start];
-	b[start] 	= new Feld;
-}
-*/
-
 int FeldFarbe (int idx)                                 // weiss/schwarz
 {
     return (idx/size)+(idx%size) % 2;
@@ -55,17 +61,20 @@ int FeldFarbe (int idx)                                 // weiss/schwarz
 
 //========================================================================
 
-enum Farbe { weiss, schwarz };
+enum Farbe { weiss, schwarz, neutral };
 
 class Feld
 {
 private:
     Index ind;
+protected:
+    Farbe f = neutral;
 public:
     Feld (int i) : ind(i){}
     ~Feld() { delete &ind; }
     
     int getindex(){ return this->ind.i; }
+    Farbe getfarbe(){ return this->f; }
     
     virtual char ch () { if (this->ind.FeldFarbe) return '_'; return ' '; }
     virtual int* pruefen( int start, int ende) {return nullptr;}
@@ -76,8 +85,6 @@ class Figur : public Feld
 {
 private:
 	void emergencyStop(int) const;
-protected:
-    Farbe f;
 public:
     Figur (int ix, Farbe ff) : Feld (ix) { this->f = ff; }
     virtual char ch () { return '?'; }
@@ -108,12 +115,58 @@ public:
 class Turm : public Offizier
 {
 private:
+	void emergencyStop(int i) const;
 public:
     Turm (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'T'; return 't'; }
+    virtual int* pruefen(int start, int ende){
+    	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
+    	    std::cout << "Ausgangsfigur ist Turm" << std::endl;
+    	    int laenge = std::abs(start-ende);
+    	    int test2 = laenge%8;
+    	    int test3 = ende%8;
+    	    int test4 = start%8;
+    	    if ( test2 == 0 ){
+    	    	int zwischenzug = std::abs(start-ende)/8;
+    	    	int* zuege = new int[zwischenzug+1];
+    	    	zuege[0] = zwischenzug;
+    	    	std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	    	while ( zwischenzug > 0){
+    	    		if ( start > ende){
+    	    			zuege[zwischenzug] = start - 8 * zwischenzug;
+    	    		}
+    	    		else {
+    	    			zuege[zwischenzug] = start + 8 * zwischenzug;
+    	    		}
+    	    		zwischenzug = zwischenzug - 1;
+    	    	}
+    	    return zuege;
+    	    }
+   	    else if ( laenge < 8 && start-ende>0 && test4 > laenge ){
+    	       	   int* zuege = new int[laenge+1];
+    	       	   zuege[0] = laenge;
+    	       	   std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	       	   while ( laenge > 0){
+    	       	   	   zuege[laenge] = start - laenge;
+    	       	   	   laenge = laenge - 1;
+    	       	   }
+    	       	   return zuege;
+    	    	   }
+    	    else if ( laenge < 8 && start-ende<0 && test3 > laenge ){
+    	    	   int* zuege = new int[laenge+1];
+    	    	   zuege[0] = laenge;
+    	    	   std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	    	   while ( laenge > 0){
+    	    	  	   zuege[laenge] = start + laenge;
+    	    	   	   laenge = laenge - 1;
+    	    	   }
+    	    	   return zuege;
+    	    	}
+    	    else {return nullptr; } 
+    }
 };
 
-class Springer : Offizier
+class Springer : public Offizier
 {
 private:
 	void emergencyStop(int i) const;
@@ -121,13 +174,12 @@ public:
     Springer (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'S'; return 's'; }
     virtual int* pruefen(int start, int ende){
+    	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
     	    std::cout << "Ausgangsfigur ist Springer" << std::endl;
-    	    
-    	    //***********************************************************************************************************
     	    int test = start-ende;
     	    std::cout << std::endl << "start-ende: " << test << std::endl;
     	    static int zuege[2];
-    	    zuege[0] = sizeof(zuege)/sizeof(*zuege)-1;
+    	    zuege[0] = 1;
     	    std::cout << "Array size: " << zuege[0] << std::endl;
     	    switch ( test ){
     	    case -17: 	if ( (int)start%8 == 0 ) {emergencyStop(1);} zuege[1]=ende;return zuege; break;
@@ -142,60 +194,88 @@ public:
     	    case 17:	if ( (int)start%8 - 7 == 0 ) {emergencyStop(10);} zuege[1]=ende; return zuege; break;
     	    default: return nullptr; break;
     	    }
-    	    //***********************************************************************************************************
     }
 };
 
-class Laeufer : Offizier
+class Laeufer : public Offizier
 {
 private:
+	void emergencyStop(int i) const;
 public:
     Laeufer (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'L'; return 'l'; }
     virtual int* pruefen(int start, int ende){
+    	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
     	    std::cout << "Ausgangsfigur ist Läufer" << std::endl;
-    	    if (ende>=0 && ende<64){
-    	    	int test1 = (start-ende)%7;
-    	    	int test2 = (start-ende)%9;
+    	    	int test1 = std::abs(start-ende)%7;
+    	    	int test2 = std::abs(start-ende)%9;
     	    	if ( test1==0 ){
-    	    		int zwischenzug = (start-ende)/7;
+    	    		int zwischenzug = std::abs(start-ende)/7;
     	    		int* zuege = new int[zwischenzug+1];
     	    		zuege[0] = zwischenzug;
     	    		std::cout << "Arraysize: " << zuege[0] << std::endl;
     	    		while ( zwischenzug > 0){
-    	    			zuege[zwischenzug] = start - 7 * zwischenzug;
+    	    			if ( start > ende){
+    	    				zuege[zwischenzug] = start - 7 * zwischenzug;
+    	    			}
+    	    			else {
+    	    				zuege[zwischenzug] = start + 7 * zwischenzug;
+    	    			}
     	    			zwischenzug = zwischenzug - 1;
     	    		}
     	    	return zuege; }
     	    	else if (test2==0){
-    	    		int zwischenzug = (start-ende)/9;
+    	    		int zwischenzug = std::abs(start-ende)/9;
     	    		int* zuege = new int[zwischenzug];
     	    		while ( zwischenzug > 0){
-    	    			zuege[zwischenzug-1] = start - 9 * zwischenzug;
+    	    			if ( start > ende){
+    	    				zuege[zwischenzug] = start - 9 * zwischenzug;
+    	    			}
+    	    			else {
+    	    				zuege[zwischenzug] = start + 9 * zwischenzug;
+    	    			}
     	    			zwischenzug = zwischenzug -1;
     	    		}
     	    	return zuege; }
     	    	else { return nullptr; }
-    	    }	
-    	    else { return nullptr; }
-    	    return nullptr;
     }
 };
 
-class Dame : Offizier
+class Dame : public Offizier
 {
 private:
+	void emergencyStop(int i) const;
 public:
     Dame (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'D'; return 'd'; }
 };
 
-class Koenig : Offizier
+class Koenig : public Offizier
 {
 private:
+	void emergencyStop(int i) const;
 public:
     Koenig (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'K'; return 'k'; }
+    virtual int* pruefen(int start, int ende){
+    	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
+    	    std::cout << "Ausgangsfigur ist König" << std::endl;
+    	    int test = start-ende;
+    	    std::cout << "start-ende: " << test << std::endl;
+    	    static int zuege[2];
+    	    zuege[0] = 1;
+    	    switch ( test ){
+    	    case  9 : 
+    	    case  8 :
+    	    case  7 :
+    	    case  1 :
+    	    case -1 :
+    	    case -7 :
+    	    case -8 :
+    	    case -9 : zuege[1]=ende; return zuege; break;
+    	    default : return nullptr; break;
+    	    }
+    }
 };
 
 
@@ -213,40 +293,51 @@ private:
 public:
     Brett();
     void print ();
-    void createFigure ( int idx, char fig){
-    switch(fig){
+    void createFigure ( int idx, char fig){					// Funktion zum Erstellen einer Figur
+    switch(fig){								// Verwendet zum Testen der Gültigkeit von Zügen
 	case 'B':	b[idx] = new Bauer(idx, weiss); break;
+	case 'b':	b[idx] = new Bauer(idx, schwarz); break;
+	case 'T':	b[idx] = new Turm(idx, weiss); break;
+	case 't':	b[idx] = new Turm(idx, schwarz); break;
+	case 'S':	b[idx] = new Springer(idx, weiss); break;
+	case 's':	b[idx] = new Springer(idx, schwarz); break;
+	case 'L':	b[idx] = new Laeufer(idx, weiss); break;
+	case 'l':	b[idx] = new Laeufer(idx, schwarz); break;
+	case 'D':	b[idx] = new Dame(idx, weiss); break;
+	case 'd':	b[idx] = new Dame(idx, schwarz); break;
+	case 'K':	b[idx] = new Koenig(idx, weiss); break;
+	case 'k':	b[idx] = new Koenig(idx, schwarz); break;
     }
     }
     void clearFigure ( int idx){
     	b[idx] = new Feld(idx);
     }
       
-    void Zug( int start, int ende){
-    		int * felder = b[start]->pruefen(start, ende);
+    void Zug( int start, int ende){						// Nimmt Array von Feldern die zwischen Start und Ziel liegen von jeweiligem Objekt auf
+    		int * felder = b[start]->pruefen(start, ende);			// und prüft ob die Felder mit Figuren gleicher/gegnerischer Farbe belegt sind
+    		if ( felder == nullptr || start-ende==0 ) { std::cout << std::endl << "@@@@@@@@@@@@   Ungültiger Zug, alle Figuren bleiben an ihrem Platz   @@@@@@@@@@@@@@" << std::endl; }
+    		else {
     		std::cout << "Grösse: " << felder[0];
     		if ( felder != nullptr){
     		std::cout << std::endl << "Kein Nullptr" << std::endl;
     		int tester = 0;
     		int size = felder[0];
     		int x;
-    		std::cout << std::endl << "Size: " << size << std::endl;
-    		for ( int m = size; m > 0; m--){
+    		std::cout << "Size: " << size << std::endl;
+    		for ( int m = size-1; m > 0; m--){
     			x = felder[m];
-    			std::cout << std::endl << "Feld wird geprüft: " << felder[1] << std::endl;
-    			std::cout << m << std::endl;
-    			std::cout << " " << b[x]->getindex() << "  " << x <<  "  " << b[x]->ch() << std::endl;
-    			if ( (b[x]->ch()!='_') && (b[x]->ch()!=' ') ){
+    			std::cout << "Feld wird geprüft: " << x <<  "  Feldcharakter: " << b[x]->ch() << " Arrayelement Nr. " << m << std::endl;
+    			if ( b[x]->getfarbe() != neutral ){
     				tester = 1;
     			}
     		}
-    		std::cout << std::endl << "Tester: " << tester << std::endl;
+    		if ( b[felder[size]]->getfarbe()==b[start]->getfarbe() ) { tester = 1; }
+    		std::cout << "Tester: " << tester << std::endl;
     		if (tester==0){
-    	b[ende] = b[start];
-    	clearFigure (start);}
-    		else{ std::cout << "Ungültiger zug" << std::endl;}}
-    	else if ( felder == nullptr ) { std::cout << std::endl << "Nullpointer!!" << std::endl; emergencyStop(3); }
-    	else { emergencyStop(4); }
+    		b[ende] = b[start];
+    		clearFigure (start);}
+    		else{ std::cout << "@@@@@@@@@@@@   Ungültiger Zug, alle Figuren bleiben an ihrem Platz   @@@@@@@@@@@@@@" << std::endl;}}
+    		else { emergencyStop(4); }}
     }
     
 };
@@ -340,6 +431,27 @@ void Springer::emergencyStop (int i) const{
 	throw new SpringerException;
 };
 
+class KoenigException : std::exception{};
+void Koenig::emergencyStop (int i) const{
+	std::cout << std::endl << "+++ Error in class Koenig; Error number: " << i << std::endl;
+	throw new KoenigException;
+};
 
+class DameException : std::exception{};
+void Dame::emergencyStop (int i) const{
+	std::cout << std::endl << "+++ Error in class Dame; Error number: " << i << std::endl;
+	throw new DameException;
+};
 
+class LaeuferException : std::exception{};
+void Laeufer::emergencyStop (int i) const{
+	std::cout << std::endl << "+++ Error in class Laeufer; Error number: " << i << std::endl;
+	throw new LaeuferException;
+};
+
+class TurmException : std::exception{};
+void Turm::emergencyStop (int i) const{
+	std::cout << std::endl << "+++ Error in class Turm; Error number: " << i << std::endl;
+	throw new TurmException;
+};
 #endif

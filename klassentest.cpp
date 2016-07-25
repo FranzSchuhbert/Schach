@@ -9,20 +9,28 @@ int main ()
 {
     Brett b;
     b.print (); // unschoen; besser mit cout << b;
-    b.createFigure( 24, 'B');
     b.print();
     b.clearFigure(11);
     b.clearFigure(12);
     b.print();
     //b.Zug(48, 32);
     //b.print();
-    b.clearFigure(51);
+    //b.clearFigure(51);
+    b.createFigure( 30, 't');
+    b.print();
     b.Zug(58, 30);
+    b.print();
+    b.clearFigure(8);
+    b.Zug(0, 32);
+    b.print();
+    b.Zug(30, 26);
+    b.print();
+    b.Zug(26, 53);
     b.print();
 }
 
 
-/*Schachbrett zum Züge testen:
+/*Schachbrett Nummern zum Züge testen:
 
 0	1	2	3	4	5	6	7
 8	9	10	11	12	13	14	15
