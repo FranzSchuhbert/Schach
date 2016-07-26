@@ -8,11 +8,11 @@ int main ()
 
 {
     Brett b;
-    b.print();
+    cout << b;
     b.clearFigure(11);
     b.createFigure(32, 't');
     b.Zug(3, 51);
-    b.print();
+    cout << b;
 }
 
 
