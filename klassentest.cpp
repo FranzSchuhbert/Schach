@@ -8,24 +8,10 @@ int main ()
 
 {
     Brett b;
-    b.print (); // unschoen; besser mit cout << b;
     b.print();
     b.clearFigure(11);
-    b.clearFigure(12);
-    b.print();
-    //b.Zug(48, 32);
-    //b.print();
-    //b.clearFigure(51);
-    b.createFigure( 30, 't');
-    b.print();
-    b.Zug(58, 30);
-    b.print();
-    b.clearFigure(8);
-    b.Zug(0, 32);
-    b.print();
-    b.Zug(30, 26);
-    b.print();
-    b.Zug(26, 53);
+    b.createFigure(32, 't');
+    b.Zug(3, 51);
     b.print();
 }
 

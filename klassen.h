@@ -11,37 +11,25 @@
 
 TO DO:
 
-- alle Funktionen zl und sp entfernen
-- evtl spch für Spaltenname entfernen ( wird nur für Brettkonstruktor verwendet )
-- Zuege für Dame einfügen
+
+- cout Operator überladen
+
 
 */
 
 
 
 
-
-
-
-
-
-
-
-
 //========================================================================
-
+// Globale Konstanten, Funktionen, Definitionen
 const int size = 8;
 const int anz = size * size;
 
-//========================================================================
-
-
-int zl (int i) { return size-i/size; }                  // Zeilennummer
-int sp (int i) { return i % size + 1; }                 // Spaltennummer
 char spch (int i) { return (char) (i % size + 'a'); }   // Spaltenname
-int test ( int a, int b ) { if(b!=1){ if (a==1){ return 1;} else {return 0; }  } else return 1;}
 
-//Selbstgeschriebene Indexklasse
+enum Farbe { weiss, schwarz, neutral };
+//========================================================================
+// Indexklasse************************************************************
 class Index
 {
 private:
@@ -52,17 +40,13 @@ public:
 	int FeldFarbe;
 	Index( int idx ) { 	this->i = idx;	this->FeldFarbe = ((int)(idx/size)+(int)(idx%size)) % 2;	}
 };
-
-
+// Klasse für Farbe des Schachbretts**************************************
 int FeldFarbe (int idx)                                 // weiss/schwarz
 {
     return (idx/size)+(idx%size) % 2;
 }
-
 //========================================================================
-
-enum Farbe { weiss, schwarz, neutral };
-
+// Super und Subklassen für Spielsteine und leere Felder******************
 class Feld
 {
 private:
@@ -94,12 +78,50 @@ public:
 class Bauer : public Figur
 {
 private:
+	void emergencyStop(int i) const;
 public:
     Bauer (int idx, Farbe ff) : Figur (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'B'; return 'b'; }
     virtual int* pruefen(int start, int ende){
-    	    if ( (start-ende)==8 || (start-ende)==16 ){ return nullptr; }
-    	    else return 0;
+    	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
+    	    std::cout << "Ausgangsfigur ist Bauer" << std::endl;
+    	    if ( this->f==weiss ){
+    	    	    if ( start-ende==8 ) {
+    	    	    	    static int zuege[2];
+    	    	    	    zuege[0] = 1;
+    	    	    	    std::cout << "Array size: " << zuege[0] << std::endl;
+    	    	    	    zuege[1] = ende;
+    	    	    	    return zuege; 
+    	    	    }
+    	    	    else if ( this->getindex()<56 && this->getindex()>47 && start-ende==16 ){
+    	    	    	    static int zuege[3];
+    	    	    	    zuege[0] = 2;
+    	    	    	    std::cout << "Array size: " << zuege[0] << std::endl;
+    	    	    	    zuege[1] = ende + 8;
+    	    	    	    zuege[2] = ende;
+    	    	    	    return zuege;
+    	    	    }
+    	    	    else { return nullptr; }
+    	    }
+    	    if ( this->f==schwarz ){
+    	    	    if ( start-ende==-8 ) {
+    	    	    	    static int zuege[2];
+    	    	    	    zuege[0] = 1;
+    	    	    	    std::cout << "Array size: " << zuege[0] << std::endl;
+    	    	    	    zuege[1] = ende;
+    	    	    	    return zuege; 
+    	    	    }
+    	    	    else if ( this->getindex()<16 && this->getindex()>7 && start-ende==-16 ){
+    	    	    	    static int zuege[3];
+    	    	    	    zuege[0] = 2;
+    	    	    	    std::cout << "Array size: " << zuege[0] << std::endl;
+    	    	    	    zuege[1] = ende - 8;
+    	    	    	    zuege[2] = ende;
+    	    	    	    return zuege;
+    	    	    }
+    	    	    else { return nullptr; }
+    	    }
+    	    else { return nullptr; }
     }
 };
 
@@ -227,6 +249,8 @@ public:
     	    	else if (test2==0){
     	    		int zwischenzug = std::abs(start-ende)/9;
     	    		int* zuege = new int[zwischenzug];
+    	    		zuege[0] = zwischenzug;
+    	    		std::cout << "Arraysize: " << zuege[0] << std::endl;
     	    		while ( zwischenzug > 0){
     	    			if ( start > ende){
     	    				zuege[zwischenzug] = start - 9 * zwischenzug;
@@ -248,6 +272,88 @@ private:
 public:
     Dame (int idx, Farbe ff) : Offizier (idx, ff) { }
     virtual char ch () { if (f == weiss) return 'D'; return 'd'; }
+    virtual int* pruefen(int start, int ende){
+    	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
+    	    std::cout << "Ausgangsfigur ist Dame" << std::endl;
+    	  	int laenge = std::abs(start-ende);
+    	    	int test1 = laenge%7;
+    	    	int test2 = laenge%9;
+    	    	int test3 = laenge%8;
+    	    	int test4 = ende%8;
+    	    	int test5 = start%8;
+    	    	if ( test1==0 && test3!=0 ){
+    	    		std::cout << "test1" << std::endl;
+    	    		int zwischenzug = std::abs(start-ende)/7;
+    	    		int* zuege = new int[zwischenzug+1];
+    	    		zuege[0] = zwischenzug;
+    	    		std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	    		while ( zwischenzug > 0){
+    	    			if ( start > ende){
+    	    				zuege[zwischenzug] = start - 7 * zwischenzug;
+    	    			}
+    	    			else {
+    	    				zuege[zwischenzug] = start + 7 * zwischenzug;
+    	    			}
+    	    			zwischenzug = zwischenzug - 1;
+    	    		}
+    	    	return zuege; }
+    	    	else if (test2==0){
+    	    		std::cout << "test2" << std::endl;
+    	    		int zwischenzug = std::abs(start-ende)/9;
+    	    		int* zuege = new int[zwischenzug];
+    	    		zuege[0] = zwischenzug;
+    	    		std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	    		while ( zwischenzug > 0){
+    	    			if ( start > ende){
+    	    				zuege[zwischenzug] = start - 9 * zwischenzug;
+    	    			}
+    	    			else {
+    	    				zuege[zwischenzug] = start + 9 * zwischenzug;
+    	    			}
+    	    			zwischenzug = zwischenzug -1;
+    	    		}
+    	    	return zuege; }   	 
+    	    	else if ( test3 == 0 ){
+    	    		std::cout << "test3" << std::endl;
+    	    		int zwischenzug = std::abs(start-ende)/8;
+    	    		int* zuege = new int[zwischenzug+1];
+    	    		zuege[0] = zwischenzug;
+    	    		std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	    		while ( zwischenzug > 0){
+    	    			if ( start > ende){
+    	    				zuege[zwischenzug] = start - 8 * zwischenzug;
+    	    			}
+    	   	 		else {
+    	   	 			zuege[zwischenzug] = start + 8 * zwischenzug;
+    	   	 		}
+    	   	 		zwischenzug = zwischenzug - 1;
+    	   	 	}
+    	   	 	return zuege;
+    	   	}
+    	   	else if ( laenge < 8 && start-ende>0 && test5 > laenge ){
+    	   		std::cout << "test4" << std::endl;
+    	   		int* zuege = new int[laenge+1];
+    	   		zuege[0] = laenge;
+    	   		std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	   		while ( laenge > 0){
+    	   			zuege[laenge] = start - laenge;
+    	   			laenge = laenge - 1;
+    	   		}
+    	   		return zuege;
+    		    	   }
+    		else if ( laenge < 8 && start-ende<0 && test4 > laenge ){
+    			std::cout << "test5" << std::endl;
+    			int* zuege = new int[laenge+1];
+    			zuege[0] = laenge;
+    			std::cout << "Arraysize: " << zuege[0] << std::endl;
+    			while ( laenge > 0){
+    				zuege[laenge] = start + laenge;
+    				laenge = laenge - 1;
+    			}
+    			return zuege;
+    	    		}
+    	    	else {return nullptr; } 
+    }
 };
 
 class Koenig : public Offizier
@@ -282,6 +388,7 @@ public:
 typedef Feld * pFeld;
 
 //========================================================================
+// Klasse für Spielbrett**************************************************
 
 class Brett
 {
@@ -315,7 +422,7 @@ public:
       
     void Zug( int start, int ende){						// Nimmt Array von Feldern die zwischen Start und Ziel liegen von jeweiligem Objekt auf
     		int * felder = b[start]->pruefen(start, ende);			// und prüft ob die Felder mit Figuren gleicher/gegnerischer Farbe belegt sind
-    		if ( felder == nullptr || start-ende==0 ) { std::cout << std::endl << "@@@@@@@@@@@@   Ungültiger Zug, alle Figuren bleiben an ihrem Platz   @@@@@@@@@@@@@@" << std::endl; }
+    		if ( felder == nullptr || start-ende==0 || b[start]->getfarbe()==neutral ) { std::cout << std::endl << "@@@@@@@@@@@@   Ungültiger Zug, alle Figuren bleiben an ihrem Platz   @@@@@@@@@@@@@@" << std::endl; }
     		else {
     		std::cout << "Grösse: " << felder[0];
     		if ( felder != nullptr){
@@ -331,7 +438,7 @@ public:
     				tester = 1;
     			}
     		}
-    		if ( b[felder[size]]->getfarbe()==b[start]->getfarbe() ) { tester = 1; }
+    		if ( b[felder[size]]->getfarbe()==b[start]->getfarbe() ) { std::cout << "setze tester auf 1" << std::endl; tester = 1; }
     		std::cout << "Tester: " << tester << std::endl;
     		if (tester==0){
     		b[ende] = b[start];
@@ -396,7 +503,7 @@ void Brett::print () // unschoen; besser mit cout << b;
         {
             std::cout << std::endl;
             std::cout.width (2);
-            std::cout << zl (i) << ": ";
+            std::cout << size-i/size << ": ";
         }
         std::cout << "  " << (b [i] -> ch ());
     }
@@ -407,6 +514,9 @@ void Brett::print () // unschoen; besser mit cout << b;
     std::cout << std::endl << std::endl;
 }
 
+
+//========================================================================
+// Klassen für Exceptions*************************************************
 class IndexException : std::exception{};
 void Index::emergencyStop (int i) const{
 	std::cout << std::endl << "+++ Error in class Index; Error number: " << i << std::endl;
@@ -453,5 +563,11 @@ class TurmException : std::exception{};
 void Turm::emergencyStop (int i) const{
 	std::cout << std::endl << "+++ Error in class Turm; Error number: " << i << std::endl;
 	throw new TurmException;
+};
+
+class BauerException : std::exception{};
+void Bauer::emergencyStop (int i) const{
+	std::cout << std::endl << "+++ Error in class Turm; Error number: " << i << std::endl;
+	throw new BauerException;
 };
 #endif
