@@ -208,11 +208,10 @@ void Bauer::emergencyStop (int i) const{
 int* Koenig::pruefen(int start, int ende){
     	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
     	    std::cout << "Ausgangsfigur ist König" << std::endl;
-    	    int test = start-ende;
-    	    std::cout << "start-ende: " << test << std::endl;
     	    static int zuege[2];
     	    zuege[0] = 1;
-    	    switch ( test ){
+    	    std::cout << "Arraysize: " << zuege[0] << std::endl;
+    	    switch ( start - ende ){
     	    case  9 : 
     	    case  8 :
     	    case  7 :
@@ -234,7 +233,6 @@ int* Dame::pruefen(int start, int ende){
     	    	int test4 = ende%8;
     	    	int test5 = start%8;
     	    	if ( test1==0 && test3!=0 ){
-    	    		std::cout << "test1" << std::endl;
     	    		int zwischenzug = std::abs(start-ende)/7;
     	    		int* zuege = new int[zwischenzug+1];
     	    		zuege[0] = zwischenzug;
@@ -250,7 +248,6 @@ int* Dame::pruefen(int start, int ende){
     	    		}
     	    	return zuege; }
     	    	else if (test2==0){
-    	    		std::cout << "test2" << std::endl;
     	    		int zwischenzug = std::abs(start-ende)/9;
     	    		int* zuege = new int[zwischenzug];
     	    		zuege[0] = zwischenzug;
@@ -266,7 +263,6 @@ int* Dame::pruefen(int start, int ende){
     	    		}
     	    	return zuege; }   	 
     	    	else if ( test3 == 0 ){
-    	    		std::cout << "test3" << std::endl;
     	    		int zwischenzug = std::abs(start-ende)/8;
     	    		int* zuege = new int[zwischenzug+1];
     	    		zuege[0] = zwischenzug;
@@ -283,7 +279,6 @@ int* Dame::pruefen(int start, int ende){
     	   	 	return zuege;
     	   	}
     	   	else if ( laenge < 8 && start-ende>0 && test5 > laenge ){
-    	   		std::cout << "test4" << std::endl;
     	   		int* zuege = new int[laenge+1];
     	   		zuege[0] = laenge;
     	   		std::cout << "Arraysize: " << zuege[0] << std::endl;
@@ -294,7 +289,6 @@ int* Dame::pruefen(int start, int ende){
     	   		return zuege;
     		    	   }
     		else if ( laenge < 8 && start-ende<0 && test4 > laenge ){
-    			std::cout << "test5" << std::endl;
     			int* zuege = new int[laenge+1];
     			zuege[0] = laenge;
     			std::cout << "Arraysize: " << zuege[0] << std::endl;
@@ -346,12 +340,10 @@ int* Laeufer::pruefen(int start, int ende){
 int* Springer::pruefen(int start, int ende){
     	    if ( start < 0 || start > 63 || ende < 0 || ende > 63 ){emergencyStop(0);}
     	    std::cout << "Ausgangsfigur ist Springer" << std::endl;
-    	    int test = start-ende;
-    	    std::cout << std::endl << "start-ende: " << test << std::endl;
     	    static int zuege[2];
     	    zuege[0] = 1;
     	    std::cout << "Array size: " << zuege[0] << std::endl;
-    	    switch ( test ){
+    	    switch ( start - ende ){
     	    case -17: 	if ( (int)start%8 == 0 ) {emergencyStop(1);} zuege[1]=ende;return zuege; break;
     	    case -15: 	if ( (int)start%8 - 7 == 0) {emergencyStop(2);} zuege[1]=ende;return zuege; break;
     	    case -10: 	if ( (int)start%8 - 1 == 0) {emergencyStop(3);} zuege[1]=ende;return zuege; break;
@@ -479,13 +471,12 @@ void Brett::Zug( int start, int ende){						// Nimmt Array von Feldern die zwisc
     		std::cout << "Size: " << size << std::endl;
     		for ( int m = size-1; m > 0; m--){
     			x = felder[m];
-    			std::cout << "Feld wird geprüft: " << x <<  "  Feldcharakter: " << b[x]->ch() << " Arrayelement Nr. " << m << std::endl;
+    			std::cout << "Feld wird geprüft: " << x <<  "  Feldcharakter: " << b[x]->ch() << std::endl;
     			if ( b[x]->getfarbe() != neutral ){
     				tester = 1;
     			}
     		}
     		if ( b[felder[size]]->getfarbe()==b[start]->getfarbe() ) { std::cout << "setze tester auf 1" << std::endl; tester = 1; }
-    		std::cout << "Tester: " << tester << std::endl;
     		if (tester==0){
     		b[ende] = b[start];
     		clearFigure (start);}

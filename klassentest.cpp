@@ -10,8 +10,14 @@ int main ()
     Brett b;
     cout << b;
     b.clearFigure(11);
+    cout << b;
     b.createFigure(32, 't');
+    cout << b;
     b.Zug(3, 51);
+    cout << b;
+    b.createFigure(11, 'b');
+    cout << b;
+    b.Zug(51, 3);
     cout << b;
 }
 
